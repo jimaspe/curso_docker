@@ -1,0 +1,917 @@
+principales comandos
+# se tiene un demonio de docker 
+dockerd 
+# para ver el status del docker 
+systemctl status docker
+# para iniciar el servicio de docker
+systemctl start docker
+# para para el servicio de docker	
+systemctl stop docker
+###### para parar el servicio de docker y el socket
+[root@localhost jdap]# systemctl stop docker
+Warning: Stopping docker.service, but it can still be activated by:
+  docker.socket
+[root@localhost jdap]# systemctl stop docker.socket
+#############################
+[jdap@localhost ~]$ docker ps
+Got permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get http://%2Fvar%2Frun%2Fdocker.sock/v1.24/containers/json: dial unix /var/run/docker.sock: connect: permission denied
+[jdap@localhost ~]$ 
+
+#############################
+docker --version
+docker info
+systemctl start docker
+systemctl stop docker
+systemctl enable docker
+docker run hello-world
+docker ps
+docker images
+docker ps -a, muestra los contenedores en runnig y parados
+docker images hello-world
+docker ps --help
+docker ps -l
+docker ps -n 4
+
+#de forma interactiva -it
+docker run -it ubuntu
+#para iniciar el contenedor de forma interactiva
+docker start -i 7bf10f3e8daa
+
+#de forma desacoiada
+docker run -d nginx
+#para borrar contenedores
+docker rm {id o nombre}
+
+#para borrar imagenes, pero se debe borrar todos los contenedores que hacen referencia a esta imagen
+docker rmi {id o nombre}
+
+#para crear un contenedor con el nombre de my_ubuntu
+docker run -it --name my_ubuntu ubuntu bash
+# solo para descargar la imagen pero no crea el contenedor
+docker pull python
+# para crear un contenedor con una imagen de python con terminal interactivo de nombre my_phyton
+docker run -it --name my_python python
+# para ejecutar un contenedor de forma interactiva
+docker exec -it my_python bash
+#para mostrar los comandos que soporta docker image, este comando agrupa los comandos que puede soportar
+docker image
+#para mostrar los comandos que soporta docker container, este comando agrupa los comandos que puede soportar
+docker container
+#para mostrar el log de los container, enviar el id del contenedor
+docker logs c87c71b955ef 
+#lista el log del contenedor y solo muestra los ultimos 6
+docker logs c87c71b955ef --tail 6
+# para matar el proceso del contenedor, enviar el id del contenedor
+docker kill c87c71b955ef
+#para ver el proceso top dentro del contenedor
+docker top {nombrecontenedor}
+#te retorna el ultimo contenedor que hemos creado
+docker ps -l
+# para ver la metadata de un contenedor en formato json y pasarlo a un fichero
+docker inspect ead272938adf > container1.txt
+# para ver la metadata de una imagen en formato json y pasarlo a un fichero
+docker inspect python > imagen1.txt
+# crea un contenedor y la opcion de -P el docker le asigna un puerto
+docker run -d -P nginx
+#resultado 
+CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS         PORTS                   NAMES
+1b012d8dcf13   nginx     "/docker-entrypoint.…"   5 seconds ago   Up 4 seconds   0.0.0.0:49153->80/tcp   nifty_tharp
+#####
+#  crea un contenedor de la imagen de nginx de nombre nginx2, con la opcion -p el usuario le indica el puerto que dese usar 
+docker run -d --name nginx2 -p 8080:80 nginx
+#resultado
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                   NAMES
+f3bacb97b2d6   nginx     "/docker-entrypoint.…"   5 seconds ago    Up 4 seconds    0.0.0.0:8080->80/tcp    nginx2
+1b012d8dcf13   nginx     "/docker-entrypoint.…"   12 minutes ago   Up 12 minutes   0.0.0.0:49153->80/tcp   nifty_tharp
+####################3
+# al ajecutar el comando ifconfig para ver la ip de la maq virtual para ingresarla desde la maq original
+
+enp0s3: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
+        inet 192.168.0.8  netmask 255.255.255.0  broadcast 192.168.0.255
+        inet6 2800:200:e650:7960:b191:4dfc:3d52:924  prefixlen 64  scopeid 0x0<global>
+        inet6 fe80::c1ee:9261:ade:68ca  prefixlen 64  scopeid 0x20<link>
+        inet6 2800:200:e650:7960::5  prefixlen 128  scopeid 0x0<global>
+        ether 08:00:27:ed:ac:ad  txqueuelen 1000  (Ethernet)
+        RX packets 98667  bytes 128617023 (122.6 MiB)
+        RX errors 0  dropped 0  overruns 0  frame 0
+        TX packets 25408  bytes 4523100 (4.3 MiB)
+        TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
+
+#comando para listar las redes
+docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+ece7b1af516c   bridge    bridge    local
+7feae802fa0c   host      host      local
+08beef480ab1   none      null      local
+
+#en host los conetenedores no se pueden ver
+#por defecto todos los conetenedores usan la red bridge
+# hacemos una busqueda de la IP del contenedor dentro de la red bridge
+docker inspect f3bacb97b2d6 | grep IPAd
+            "SecondaryIPAddresses": null,
+            "IPAddress": "172.17.0.2",
+                    "IPAddress": "172.17.0.2",
+
+#pasamos todo el contenido del inspect a un archivo
+docker inspect nginx2 > nginx2.txt
+#y hacemos la busqueda del apartado de NetworkSettings y podemos ver la configuracion de la network, IPAddress y los puertos
+
+       "NetworkSettings": {
+            "Bridge": "",
+            "SandboxID": "740048cdcd88bc8017ce5d2afaffc0e6dbca8d027e331c059d14677861646ffa",
+            "HairpinMode": false,
+            "LinkLocalIPv6Address": "",
+            "LinkLocalIPv6PrefixLen": 0,
+            "Ports": {
+                "80/tcp": [
+                    {
+                        "HostIp": "0.0.0.0",
+                        "HostPort": "8080"
+                    }
+                ]
+            },
+            "SandboxKey": "/var/run/docker/netns/740048cdcd88",
+            "SecondaryIPAddresses": null,
+            "SecondaryIPv6Addresses": null,
+            "EndpointID": "ffd81678e1036e95bc65e479f86c7c2f32e890c453c638d690de5a752ea03cec",
+            "Gateway": "172.17.0.1",
+            "GlobalIPv6Address": "",
+            "GlobalIPv6PrefixLen": 0,
+            "IPAddress": "172.17.0.2",
+            "IPPrefixLen": 16,
+            "IPv6Gateway": "",
+            "MacAddress": "02:42:ac:11:00:02",
+            "Networks": {
+                "bridge": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "NetworkID": "ece7b1af516c35acc38cad8695005762452cd8f0937704cc9b8314cc93a0e754",
+                    "EndpointID": "ffd81678e1036e95bc65e479f86c7c2f32e890c453c638d690de5a752ea03cec",
+                    "Gateway": "172.17.0.1",
+                    "IPAddress": "172.17.0.2",
+                    "IPPrefixLen": 16,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+
+
+########################## redes ########################
+#listamos los contenedores, p.e de nginx
+docker ps
+#vocamos el contenido de la configuracion de la red bridge y veremos la configuracion de la red y las ip asignadas a los contenedores que estan en estado up
+docker network inspect bridge > bridge1.txt
+
+#el contenido del archivo se verá como de la siguiente forma
+"Containers": {
+            "1b012d8dcf13d556c61c747201ad3f52fddfbb28f1e833896ae48ca16da578d2": {
+                "Name": "nifty_tharp",
+                "EndpointID": "6ff0a968c0b71d7dd8b0fa921f9d68aa5deb49a30949711d277339c7b5eb3dda",
+                "MacAddress": "02:42:ac:11:00:03",
+                "IPv4Address": "172.17.0.3/16",
+                "IPv6Address": ""
+            },
+            "f3bacb97b2d6d3ebdc99100b9ea73cac849e159c9b38a472ae4f25d659c14fb2": {
+                "Name": "nginx2",
+                "EndpointID": "ffd81678e1036e95bc65e479f86c7c2f32e890c453c638d690de5a752ea03cec",
+                "MacAddress": "02:42:ac:11:00:02",
+                "IPv4Address": "172.17.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {
+            "com.docker.network.bridge.default_bridge": "true",
+            "com.docker.network.bridge.enable_icc": "true",
+            "com.docker.network.bridge.enable_ip_masquerade": "true",
+            "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+            "com.docker.network.bridge.name": "docker0",
+            "com.docker.network.driver.mtu": "1500"
+        },
+
+################################################
+#para ver la configuracion del puerto del contenedor
+docker port mongo2
+27017/tcp -> 0.0.0.0:27017
+#para ver la configuracion hacemos un docker ps
+docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED              STATUS              PORTS                      NAMES
+8537506b0ce1   mongo     "docker-entrypoint.s…"   About a minute ago   Up About a minute   0.0.0.0:27017->27017/tcp   mongo2
+f3bacb97b2d6   nginx     "/docker-entrypoint.…"   2 days ago           Up 2 hours          0.0.0.0:8080->80/tcp       nginx2
+1b012d8dcf13   nginx     "/docker-entrypoint.…"   2 days ago           Up 2 hours          0.0.0.0:49153->80/tcp      nifty_tharp
+
+
+#####################################################
+docker run -d -p 27018:27017 --name mongo3 mongo
+58070f195a7df25930f897b4285cb7e548dff529491ea81627ca2223f03149a3
+[root@localhost jdap]# docker ps
+CONTAINER ID   IMAGE     COMMAND                  CREATED          STATUS          PORTS                      NAMES
+58070f195a7d   mongo     "docker-entrypoint.s…"   6 seconds ago    Up 4 seconds    0.0.0.0:27018->27017/tcp   mongo3
+8537506b0ce1   mongo     "docker-entrypoint.s…"   11 minutes ago   Up 10 minutes   0.0.0.0:27017->27017/tcp   mongo2
+f3bacb97b2d6   nginx     "/docker-entrypoint.…"   2 days ago       Up 2 hours      0.0.0.0:8080->80/tcp       nginx2
+1b012d8dcf13   nginx     "/docker-entrypoint.…"   2 days ago       Up 2 hours      0.0.0.0:49153->80/tcp      nifty_tharp
+
+#ingresamos el contenedor mongo3
+docker exec -it mongo3 bash
+################################### comando para ver las networks
+ nmcli con
+NAME    UUID                                  TYPE      DEVICE 
+enp0s3  22975368-36d6-4c07-b544-57a0ce1d5d45  ethernet  enp0s3 
+virbr0  aa2cf500-f4d1-480b-bc43-fea82ffe3988  bridge    virbr0 
+[root@localhost jdap]# 
+
+
+########################################333333
+#creamos una network de tipo bridge para nuestros contenedores
+docker network create red1
+61a3ffbbe3d4cc97af404aafd699f6a4b596d399c4045990681e72116adeb261
+[root@localhost jdap]# docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+ece7b1af516c   bridge    bridge    local
+7feae802fa0c   host      host      local
+08beef480ab1   none      null      local
+61a3ffbbe3d4   red1      bridge    local
+[root@localhost jdap]# 
+
+
+# comando para ver las ip segun nombre de red
+[root@localhost jdap]# ip a | more
+16: br-61a3ffbbe3d4: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default 
+    link/ether 02:42:bb:70:e3:8c brd ff:ff:ff:ff:ff:ff
+    inet 172.18.0.1/16 brd 172.18.255.255 scope global br-61a3ffbbe3d4
+       valid_lft forever preferred_lft forever
+
+# también lo podemos ver en el inspect de la red, todos los contenedores de que pertenecen a la network red1, estarán en la subnet 172.18.0.0/16
+[root@localhost jdap]# docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+ece7b1af516c   bridge    bridge    local
+7feae802fa0c   host      host      local
+08beef480ab1   none      null      local
+61a3ffbbe3d4   red1      bridge    local
+[root@localhost jdap]# docker network inspect red1
+[
+    {
+        "Name": "red1",
+        "Id": "61a3ffbbe3d4cc97af404aafd699f6a4b596d399c4045990681e72116adeb261",
+        "Created": "2020-12-29T04:52:42.026726313-05:00",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "172.18.0.0/16",
+                    "Gateway": "172.18.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Options": {},
+        "Labels": {}
+    }
+]
+[root@localhost jdap]# 
+
+############################### creamos otra red de contenedores con una subnet como parametro
+
+docker network create --subnet 192.168.0.0/16 red2
+5b43271ea9fdb2a08fd0971b5eb3060a253ca5d8cbb9a23b0b0fdddcfbe9bfe6
+[root@localhost jdap]# docker network ls
+NETWORK ID     NAME      DRIVER    SCOPE
+ece7b1af516c   bridge    bridge    local
+7feae802fa0c   host      host      local
+08beef480ab1   none      null      local
+61a3ffbbe3d4   red1      bridge    local
+5b43271ea9fd   red2      bridge    local
+[root@localhost jdap]# nmcli con
+NAME             UUID                                  TYPE      DEVICE          
+enp0s3           22975368-36d6-4c07-b544-57a0ce1d5d45  ethernet  enp0s3          
+br-5b43271ea9fd  84a5c8ce-b3b1-4a75-aa9c-c1baa29a3fcb  bridge    br-5b43271ea9fd 
+br-61a3ffbbe3d4  21436707-3356-44a9-960e-cae22a6b5bfe  bridge    br-61a3ffbbe3d4 
+virbr0           aa2cf500-f4d1-480b-bc43-fea82ffe3988  bridge    virbr0          
+
+
+
+[root@localhost jdap]# docker network inspect red2
+[
+    {
+        "Name": "red2",
+        "Id": "5b43271ea9fdb2a08fd0971b5eb3060a253ca5d8cbb9a23b0b0fdddcfbe9bfe6",
+        "Created": "2020-12-29T05:07:41.781121166-05:00",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": {},
+            "Config": [
+                {
+                    "Subnet": "192.168.0.0/16"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Ingress": false,
+        "ConfigFrom": {
+            "Network": ""
+        },
+        "ConfigOnly": false,
+        "Containers": {},
+        "Options": {},
+        "Labels": {}
+    }
+]
+[root@localhost jdap]# 
+
+##################################################
+# para crear un contenedor con un nombre y red especifico
+docker run -it --name ubuntoA --network red1 ubuntu
+root@fe66bf3986cd:/# 
+
+
+################# comando para instalar el ping dentro del contenedor 
+apt-get update
+
+############### comando para agregar un contenedor a otra red
+
+[root@localhost jdap]# docker network connect red2 ubuntoA
+[root@localhost jdap]# docker inspect ubuntoA | grep IPAdd
+            "SecondaryIPAddresses": null,
+            "IPAddress": "",
+                    "IPAddress": "172.18.0.2",
+                    "IPAddress": "192.168.0.2",
+[root@localhost jdap]# 
+
+################ comando para desconectar un contenedor de una red específica
+[root@localhost jdap]# docker network disconnect red2 ubuntoA
+[root@localhost jdap]# docker inspect ubuntoA | grep IPAdd
+            "SecondaryIPAddresses": null,
+            "IPAddress": "",
+                    "IPAddress": "172.18.0.2",
+[root@localhost jdap]# 
+
+##contenedores de diferentes redes no se pueden ver, pero si conectas un contenedor a esa mismma red ya se pueden ver
+
+#####comando para obtener la cantidad  de contenedores
+[root@localhost jdap]# docker ps -a | wc -l
+21
+
+#comando para listar los id de los contenedores en estado start
+[root@localhost jdap]# docker ps -q
+a37a9753e1f5
+
+####comando para listar los de los contenedores en estado stop
+[root@localhost jdap]# docker ps -aq
+a37a9753e1f5
+ecb1458db06c
+015c32f53c6a
+fcff25e7cdd8
+be76cd820e03
+fe66bf3986cd
+58070f195a7d
+8537506b0ce1
+9cb833229127
+f3bacb97b2d6
+1b012d8dcf13
+ead272938adf
+63484ca54f35
+d058a7771f91
+7cef8acaea92
+c87c71b955ef
+98c6ce423e86
+3292a4114e42
+620fed1d7187
+b77b655d8e9e
+[root@localhost jdap]# 
+
+###comando para eliminar los contenedores a partir de la lista de los id de contenedores
+[root@localhost jdap]# docker rm `docker ps -aq`
+
+##### enlazando contenedores con --link
+# 1ro descargamos la imagen busybox
+[root@localhost jdap]# docker pull busybox
+
+### 2do creamos el contenedor b1, el parametro --rm es para que se elimine solo despues de usar el contenedor
+[root@localhost jdap]# docker run -it --rm --name b1 busybox
+Unable to find image 'busybox:latest' locally
+latest: Pulling from library/busybox
+d60bca25ef07: Pull complete 
+Digest: sha256:49dae530fd5fee674a6b0d3da89a380fc93746095e7eca0f1b70188a95fd5d71
+Status: Downloaded newer image for busybox:latest
+/ # ls
+bin   dev   etc   home  proc  root  sys   tmp   usr   var
+/ # 
+/ # cat /etc/hosts
+127.0.0.1	localhost
+::1	localhost ip6-localhost ip6-loopback
+fe00::0	ip6-localnet
+ff00::0	ip6-mcastprefix
+ff02::1	ip6-allnodes
+ff02::2	ip6-allrouters
+172.17.0.2	3017c1d82a81
+
+#solo responde ping por IP del otro contenedor
+/ # ping 127.17.0.3
+PING 127.17.0.3 (127.17.0.3): 56 data bytes
+64 bytes from 127.17.0.3: seq=0 ttl=64 time=0.099 ms
+64 bytes from 127.17.0.3: seq=1 ttl=64 time=0.173 ms
+64 bytes from 127.17.0.3: seq=2 ttl=64 time=0.175 ms
+64 bytes from 127.17.0.3: seq=3 ttl=64 time=0.068 ms
+
+
+
+#### creamos un segundo contenedor b2
+[root@localhost jdap]# docker run -it --rm --name b2
+"docker run" requires at least 1 argument.
+See 'docker run --help'.
+
+Usage:  docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+
+Run a command in a new container
+[root@localhost jdap]# docker run -it --rm --name b2 busybox
+/ # cat etc/hosts
+127.0.0.1	localhost
+::1	localhost ip6-localhost ip6-loopback
+fe00::0	ip6-localnet
+ff00::0	ip6-mcastprefix
+ff02::1	ip6-allnodes
+ff02::2	ip6-allrouters
+172.17.0.3	d1300b22faea
+/ # 
+
+#### creamos un tercer contenedor b3 con el parametro --link, el cual sí permite ver al contenedor que se enlaza pero no es viceversa
+
+[root@localhost jdap]# docker run -it --rm --name b3 --link b1:maquina1 busybox
+/ # cat etc/hosts
+127.0.0.1	localhost
+::1	localhost ip6-localhost ip6-loopback
+fe00::0	ip6-localnet
+ff00::0	ip6-mcastprefix
+ff02::1	ip6-allnodes
+ff02::2	ip6-allrouters
+172.17.0.2	maquina1 3017c1d82a81 b1
+172.17.0.4	a5825d997a54
+/ # ping b1
+PING b1 (172.17.0.2): 56 data bytes
+64 bytes from 172.17.0.2: seq=0 ttl=64 time=0.245 ms
+64 bytes from 172.17.0.2: seq=1 ttl=64 time=0.133 ms
+64 bytes from 172.17.0.2: seq=2 ttl=64 time=0.259 ms
+64 bytes from 172.17.0.2: seq=3 ttl=64 time=0.169 ms
+^C
+--- b1 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.133/0.201/0.259 ms
+/ # ping maquina1
+PING maquina1 (172.17.0.2): 56 data bytes
+64 bytes from 172.17.0.2: seq=0 ttl=64 time=0.161 ms
+64 bytes from 172.17.0.2: seq=1 ttl=64 time=0.333 ms
+64 bytes from 172.17.0.2: seq=2 ttl=64 time=0.243 ms
+64 bytes from 172.17.0.2: seq=3 ttl=64 time=0.379 ms
+^C
+--- maquina1 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.161/0.279/0.379 ms
+/ # 
+
+######## creamos un contenedor que funja como el servidor de mysql,
+## el parametro -e para crear un contenedor con parametro environemt (el nombre del parametro se puede ver en la ## documentacion de la imagen mysql de dockerhub)
+docker run -d --name mysql_server --rm --network red1 -e MYSQL_ROOT_PASSWORD=secret mysql
+
+## ingresamos al contenedor con el comando exec
+[root@localhost jdap]# docker exec -it mysql_server bash
+
+## nos conectamos a la BD
+root@c3ee139c50c4:/# mysql -u root -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 9
+Server version: 8.0.22 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+4 rows in set (0.01 sec)
+
+###### creamos otro contenedor que funja el rol de cliente
+## por ello colocamos bash para que no cree la base de datos y -it para que levante de forma iterativa
+
+[root@localhost jdap]# docker run -it --name mysql_client --rm --network red1 mysql bash
+
+### nos conectamos al server y como estan dentro de la misma network red1 solo es suficiente con el nombre del contenedor
+
+root@30e2a0713b8a:/# mysql -h mysql_server -u root -p
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 10
+Server version: 8.0.22 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2020, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases
+    -> ;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+4 rows in set (0.01 sec)
+###########################    volumenes persistentes    ################################
+### creamos un volumen persistente: en el contenedor de imagen ubuntu se crea un directorio y todo lo que se ##crea en este directorio se ve en el directorio /var/lib/docker/volumes/f4f7a1d8e7117a095a89b1ad3ddedd67f876055834fbe51515ea08749ba713bd/_data
+## todo lo creado se puede visualizar en ambos directorios 
+creamos un directorio /datos el cual contiene un volumen 
+
+[root@localhost jdap]# docker run -it -v /datos --name ubuntu2 ubuntu bash
+root@c53e14572034:/# ls -l
+total 0
+lrwxrwxrwx.   1 root root   7 Nov  6 01:21 bin -> usr/bin
+drwxr-xr-x.   2 root root   6 Apr 15  2020 boot
+drwxr-xr-x.   2 root root   6 Jan  8 00:57 datos
+drwxr-xr-x.   5 root root 360 Jan  8 00:57 dev
+drwxr-xr-x.   1 root root  66 Jan  8 00:57 etc
+drwxr-xr-x.   2 root root   6 Apr 15  2020 home
+lrwxrwxrwx.   1 root root   7 Nov  6 01:21 lib -> usr/lib
+lrwxrwxrwx.   1 root root   9 Nov  6 01:21 lib32 -> usr/lib32
+lrwxrwxrwx.   1 root root   9 Nov  6 01:21 lib64 -> usr/lib64
+lrwxrwxrwx.   1 root root  10 Nov  6 01:21 libx32 -> usr/libx32
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 media
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 mnt
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 opt
+dr-xr-xr-x. 271 root root   0 Jan  8 00:57 proc
+drwx------.   2 root root  37 Nov  6 01:25 root
+drwxr-xr-x.   1 root root  21 Nov 25 22:25 run
+lrwxrwxrwx.   1 root root   8 Nov  6 01:21 sbin -> usr/sbin
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 srv
+dr-xr-xr-x.  13 root root   0 Jan  7 18:49 sys
+drwxrwxrwt.   2 root root   6 Nov  6 01:25 tmp
+drwxr-xr-x.   1 root root  18 Nov  6 01:21 usr
+drwxr-xr-x.   1 root root  17 Nov  6 01:25 var
+root@c53e14572034:/# cd datos
+root@c53e14572034:/datos# touch f1.txt
+root@c53e14572034:/datos# ls -l
+total 0
+-rw-r--r--. 1 root root 0 Jan  8 01:01 f1.txt
+root@c53e14572034:/datos# echo hola >>f1.txt
+root@c53e14572034:/datos# cat f1.txt 
+hola
+root@c53e14572034:/datos# 
+
+### si nos vamos al directorio podemos verificar la creacion de este archivo
+[root@localhost _data]# pwd
+/var/lib/docker/volumes/f4f7a1d8e7117a095a89b1ad3ddedd67f876055834fbe51515ea08749ba713bd/_data
+[root@localhost _data]# ls -l
+total 4
+-rw-r--r--. 1 root root 5 ene  7 20:03 f1.txt
+[root@localhost _data]# cat f1.txt 
+hola
+[root@localhost _data]#
+
+####### para visualizar la configuración del volumen hacemos un inspect
+[root@localhost _data]# docker volume ls
+DRIVER    VOLUME NAME
+local     1e4907a8524011185a8c68f4c3b9f2eee22bbb1cd1bb1e7ac1d5af4a133e3f89
+local     2e8a2337650dfe38636171a1adbfcdfa25a1c7d355234340a35cd33b7c0f5a85
+local     6dd6e8be6890041de1a0d9091350c2b2e17c01adaf60a7d3e00d1fb682479f02
+local     53dcaa66732733fb78712fc1f1a48a067a2643a570e4416a16f247b3391eb915
+local     482a5718d124b4305dbcedcab27e2706a17a928e25d1468828e4ca84919d6fe0
+local     522f8cc97d1099943a274f598816db0ac2aa4a67dbf42e9d05588d96a40b2e9b
+local     151439e5c9674357ac422cf8650a7c1e55eecf691fce9ae2b9465a842366a84a
+local     731378fdff687df4e6c26867abbb50bfef27aa03737e03970d65454614951603
+local     8601646b481a42c2ff65d8cf37d85aaa0e832b0ec455f151e7eef88b7bd73d3e
+local     ab764cd1f74618b186894d3412e6258575ffc0e381722d4b5da8302898dacf29
+local     b235133957687aee5f76f26ea63d05296f397f525e8a03b633fb20df2003eaf1
+local     cf319cbd5600a49b2ae4af5f45e19fbc0d3eef048b89faec168d503cb5e2bd4a
+local     f4f7a1d8e7117a095a89b1ad3ddedd67f876055834fbe51515ea08749ba713bd
+local     fdea7caf346b3fb28d3e20f6160b66b6abd809c9ad4f99943e5682a8e82be118
+[root@localhost _data]# docker volume inspect fdea7caf346b3fb28d3e20f6160b66b6abd809c9ad4f99943e5682a8e82be118
+[
+    {
+        "CreatedAt": "2020-12-29T22:47:22-05:00",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/fdea7caf346b3fb28d3e20f6160b66b6abd809c9ad4f99943e5682a8e82be118/_data",
+        "Name": "fdea7caf346b3fb28d3e20f6160b66b6abd809c9ad4f99943e5682a8e82be118",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+[root@localhost _data]# 
+
+#########################
+## se tiene otra opcion para hacer un montaje del directorio local del host con el directorio del contenedor, si bien se usa el parametro -v que hace referencia a un volumen persistente, en realidad no se crea ningun volumen en la ruta var/lib/docker/volumes
+
+[root@localhost dir1]# docker run -it -v /root/dir1:/dir1 --name ubuntu3 ubuntu
+root@0fde9300eac8:/# ls
+bin  boot  dev  dir1  etc  home  lib  lib32  lib64  libx32  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+root@0fde9300eac8:/# cd dir1
+root@0fde9300eac8:/dir1# ls
+root@0fde9300eac8:/dir1# ls -l
+total 0
+root@0fde9300eac8:/dir1# touch f1
+root@0fde9300eac8:/dir1# ls -l
+total 0
+-rw-r--r--. 1 root root 0 Jan  8 04:29 f1
+root@0fde9300eac8:/dir1# ls
+f1
+root@0fde9300eac8:/dir1# ls
+f1  f2
+
+######
+### al hacer un inspect al contenedor ubuntu3  de la imagen de ubuntu, podemos ver que el tipo de montaje es "Type": "bind"
+[root@localhost dir1]# docker inspect ubuntu3
+
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/root/dir1",
+                "Destination": "/dir1",
+                "Mode": "",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+
+####################### comandos para compartir un volumen persistente, en este caso se hace referencia al volumen de otro contenedor y el nuevo contenedor crea la misma carpeta del otro contenedor (en el ejemplo la carpeta se llama datos y se puede ver que existe en ambos contenedores). Nota: el volumen del primer contenedor sí existe en la ruta  /var/lib/docker/volumes  ###################
+
+[root@localhost jdap]# docker run -it --name ubuntu6 --volumes-from ubuntu2 ubuntu bash
+root@dc72c7b4ee73:/# ls -l
+total 0
+lrwxrwxrwx.   1 root root   7 Nov  6 01:21 bin -> usr/bin
+drwxr-xr-x.   2 root root   6 Apr 15  2020 boot
+drwxr-xr-x.   2 root root  20 Jan  8 01:01 datos
+drwxr-xr-x.   5 root root 360 Jan  8 05:59 dev
+drwxr-xr-x.   1 root root  66 Jan  8 05:59 etc
+drwxr-xr-x.   2 root root   6 Apr 15  2020 home
+lrwxrwxrwx.   1 root root   7 Nov  6 01:21 lib -> usr/lib
+lrwxrwxrwx.   1 root root   9 Nov  6 01:21 lib32 -> usr/lib32
+lrwxrwxrwx.   1 root root   9 Nov  6 01:21 lib64 -> usr/lib64
+lrwxrwxrwx.   1 root root  10 Nov  6 01:21 libx32 -> usr/libx32
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 media
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 mnt
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 opt
+dr-xr-xr-x. 242 root root   0 Jan  8 05:59 proc
+drwx------.   2 root root  37 Nov  6 01:25 root
+drwxr-xr-x.   1 root root  21 Nov 25 22:25 run
+lrwxrwxrwx.   1 root root   8 Nov  6 01:21 sbin -> usr/sbin
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 srv
+dr-xr-xr-x.  13 root root   0 Jan  8 04:14 sys
+drwxrwxrwt.   2 root root   6 Nov  6 01:25 tmp
+drwxr-xr-x.   1 root root  18 Nov  6 01:21 usr
+drwxr-xr-x.   1 root root  17 Nov  6 01:25 var
+root@dc72c7b4ee73:/# cd datos
+root@dc72c7b4ee73:/datos# ls -l
+total 4
+-rw-r--r--. 1 root root 5 Jan  8 01:03 f1.txt
+root@dc72c7b4ee73:/datos# ls
+f1.txt
+root@dc72c7b4ee73:/datos# ls -l
+total 4
+-rw-r--r--. 1 root root 5 Jan  8 01:03 f1.txt
+-rw-r--r--. 1 root root 0 Jan  8 06:08 f2
+root@dc72c7b4ee73:/datos# touch f4
+root@dc72c7b4ee73:/datos# ls -l
+total 4
+-rw-r--r--. 1 root root 5 Jan  8 01:03 f1.txt
+-rw-r--r--. 1 root root 0 Jan  8 06:08 f2
+-rw-r--r--. 1 root root 0 Jan  8 06:09 f3
+-rw-r--r--. 1 root root 0 Jan  8 06:09 f4
+root@dc72c7b4ee73:/datos# 
+
+####si revisamos el contenido del vlumen creado en la carpeta /var/lib/docker/volumes/ se puede ver los archivos que se van creando, adicionalmente tener en cuenta que si borras un contenedor el VP sigue existiendo para los otros contenedores, y si finalmente todos los contenedores que usan este VP son eliminados entonces el VP se queda inservivle.
+
+[root@localhost ~]# cd /var/lib/docker/volumes/
+[root@localhost volumes]# cd f4f7a1d8e7117a095a89b1ad3ddedd67f876055834fbe51515ea08749ba713bd/_data/
+[root@localhost _data]# ls -l
+total 4
+-rw-r--r--. 1 root root 5 ene  7 20:03 f1.txt
+[root@localhost _data]# touch f2
+[root@localhost _data]# ls -l
+total 4
+-rw-r--r--. 1 root root 5 ene  7 20:03 f1.txt
+-rw-r--r--. 1 root root 0 ene  8 01:08 f2
+[root@localhost _data]# ls -l
+total 4
+-rw-r--r--. 1 root root 5 ene  7 20:03 f1.txt
+-rw-r--r--. 1 root root 0 ene  8 01:08 f2
+-rw-r--r--. 1 root root 0 ene  8 01:09 f3
+-rw-r--r--. 1 root root 0 ene  8 01:09 f4
+[root@localhost _data]# 
+
+###################################
+comandos para crear un volumen vol1 y luego montar este VP en la creacion de los contenedores
+
+[root@localhost volumes]# docker volume create vol1
+vol1
+[root@localhost volumes]# docker volume ls
+DRIVER    VOLUME NAME
+local     1e4907a8524011185a8c68f4c3b9f2eee22bbb1cd1bb1e7ac1d5af4a133e3f89
+local     2e8a2337650dfe38636171a1adbfcdfa25a1c7d355234340a35cd33b7c0f5a85
+local     6dd6e8be6890041de1a0d9091350c2b2e17c01adaf60a7d3e00d1fb682479f02
+local     53dcaa66732733fb78712fc1f1a48a067a2643a570e4416a16f247b3391eb915
+local     482a5718d124b4305dbcedcab27e2706a17a928e25d1468828e4ca84919d6fe0
+local     522f8cc97d1099943a274f598816db0ac2aa4a67dbf42e9d05588d96a40b2e9b
+local     151439e5c9674357ac422cf8650a7c1e55eecf691fce9ae2b9465a842366a84a
+local     731378fdff687df4e6c26867abbb50bfef27aa03737e03970d65454614951603
+local     8601646b481a42c2ff65d8cf37d85aaa0e832b0ec455f151e7eef88b7bd73d3e
+local     ab764cd1f74618b186894d3412e6258575ffc0e381722d4b5da8302898dacf29
+local     b235133957687aee5f76f26ea63d05296f397f525e8a03b633fb20df2003eaf1
+local     cf319cbd5600a49b2ae4af5f45e19fbc0d3eef048b89faec168d503cb5e2bd4a
+local     f4f7a1d8e7117a095a89b1ad3ddedd67f876055834fbe51515ea08749ba713bd
+local     fdea7caf346b3fb28d3e20f6160b66b6abd809c9ad4f99943e5682a8e82be118
+local     vol1
+[root@localhost volumes]# docker inspect volume vol1
+[
+    {
+        "CreatedAt": "2021-01-08T01:24:27-05:00",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/var/lib/docker/volumes/vol1/_data",
+        "Name": "vol1",
+        "Options": {},
+        "Scope": "local"
+    }
+]
+Error: No such object: volume
+
+##creamos el contenedor montando el volumen creado
+[root@localhost volumes]# docker run -it --name ubuntu7 -v vol1:/dir1 ubuntu bash
+root@e6fa6e3c5441:/# ls -l
+total 0
+lrwxrwxrwx.   1 root root   7 Nov  6 01:21 bin -> usr/bin
+drwxr-xr-x.   2 root root   6 Apr 15  2020 boot
+drwxr-xr-x.   5 root root 360 Jan  8 06:30 dev
+drwxr-xr-x.   2 root root   6 Jan  8 06:24 dir1
+drwxr-xr-x.   1 root root  66 Jan  8 06:30 etc
+drwxr-xr-x.   2 root root   6 Apr 15  2020 home
+lrwxrwxrwx.   1 root root   7 Nov  6 01:21 lib -> usr/lib
+lrwxrwxrwx.   1 root root   9 Nov  6 01:21 lib32 -> usr/lib32
+lrwxrwxrwx.   1 root root   9 Nov  6 01:21 lib64 -> usr/lib64
+lrwxrwxrwx.   1 root root  10 Nov  6 01:21 libx32 -> usr/libx32
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 media
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 mnt
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 opt
+dr-xr-xr-x. 250 root root   0 Jan  8 06:30 proc
+drwx------.   2 root root  37 Nov  6 01:25 root
+drwxr-xr-x.   1 root root  21 Nov 25 22:25 run
+lrwxrwxrwx.   1 root root   8 Nov  6 01:21 sbin -> usr/sbin
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 srv
+dr-xr-xr-x.  13 root root   0 Jan  8 04:14 sys
+drwxrwxrwt.   2 root root   6 Nov  6 01:25 tmp
+drwxr-xr-x.   1 root root  18 Nov  6 01:21 usr
+drwxr-xr-x.   1 root root  17 Nov  6 01:25 var
+root@e6fa6e3c5441:/# cd dir1
+root@e6fa6e3c5441:/dir1# ls l
+ls: cannot access 'l': No such file or directory
+root@e6fa6e3c5441:/dir1# ls -l
+total 0
+root@e6fa6e3c5441:/dir1# ls -l
+total 0
+-rw-r--r--. 1 root root 0 Jan  8 06:33 f1
+root@e6fa6e3c5441:/dir1# 
+
+
+############## eliminando volumenes con rm y prune ##################
+[root@localhost volumes]# docker volume ls
+DRIVER    VOLUME NAME
+local     1e4907a8524011185a8c68f4c3b9f2eee22bbb1cd1bb1e7ac1d5af4a133e3f89
+local     2e8a2337650dfe38636171a1adbfcdfa25a1c7d355234340a35cd33b7c0f5a85
+local     6dd6e8be6890041de1a0d9091350c2b2e17c01adaf60a7d3e00d1fb682479f02
+local     53dcaa66732733fb78712fc1f1a48a067a2643a570e4416a16f247b3391eb915
+local     482a5718d124b4305dbcedcab27e2706a17a928e25d1468828e4ca84919d6fe0
+local     522f8cc97d1099943a274f598816db0ac2aa4a67dbf42e9d05588d96a40b2e9b
+local     151439e5c9674357ac422cf8650a7c1e55eecf691fce9ae2b9465a842366a84a
+local     731378fdff687df4e6c26867abbb50bfef27aa03737e03970d65454614951603
+local     8601646b481a42c2ff65d8cf37d85aaa0e832b0ec455f151e7eef88b7bd73d3e
+local     ab764cd1f74618b186894d3412e6258575ffc0e381722d4b5da8302898dacf29
+local     b235133957687aee5f76f26ea63d05296f397f525e8a03b633fb20df2003eaf1
+local     cf319cbd5600a49b2ae4af5f45e19fbc0d3eef048b89faec168d503cb5e2bd4a
+local     f4f7a1d8e7117a095a89b1ad3ddedd67f876055834fbe51515ea08749ba713bd
+local     fdea7caf346b3fb28d3e20f6160b66b6abd809c9ad4f99943e5682a8e82be118
+local     vol1
+[root@localhost volumes]# docker volume rm f4f7a1d8e7117a095a89b1ad3ddedd67f876055834fbe51515ea08749ba713bd
+Error response from daemon: remove f4f7a1d8e7117a095a89b1ad3ddedd67f876055834fbe51515ea08749ba713bd: volume is in use - [e82e394cfa6f969690f60e6b6e5f779caaae7647cb7c3931d2cd34768eea411a, dc72c7b4ee732f0d3bface8f8ea97634ff8f0c3eb74eefadbb1f5bfa07a87729, c53e1457203424b8bf21b162d2d3781acba90be3a07636325a553634ddda2a82]
+[root@localhost volumes]# docker volume 
+
+Usage:  docker volume COMMAND
+
+Manage volumes
+
+Commands:
+  create      Create a volume
+  inspect     Display detailed information on one or more volumes
+  ls          List volumes
+  prune       Remove all unused local volumes
+  rm          Remove one or more volumes
+
+Run 'docker volume COMMAND --help' for more information on a command.
+[root@localhost volumes]# docker volume prune
+WARNING! This will remove all local volumes not used by at least one container.
+Are you sure you want to continue? [y/N] y
+Deleted Volumes:
+2e8a2337650dfe38636171a1adbfcdfa25a1c7d355234340a35cd33b7c0f5a85
+1e4907a8524011185a8c68f4c3b9f2eee22bbb1cd1bb1e7ac1d5af4a133e3f89
+6dd6e8be6890041de1a0d9091350c2b2e17c01adaf60a7d3e00d1fb682479f02
+731378fdff687df4e6c26867abbb50bfef27aa03737e03970d65454614951603
+ab764cd1f74618b186894d3412e6258575ffc0e381722d4b5da8302898dacf29
+b235133957687aee5f76f26ea63d05296f397f525e8a03b633fb20df2003eaf1
+cf319cbd5600a49b2ae4af5f45e19fbc0d3eef048b89faec168d503cb5e2bd4a
+53dcaa66732733fb78712fc1f1a48a067a2643a570e4416a16f247b3391eb915
+522f8cc97d1099943a274f598816db0ac2aa4a67dbf42e9d05588d96a40b2e9b
+8601646b481a42c2ff65d8cf37d85aaa0e832b0ec455f151e7eef88b7bd73d3e
+fdea7caf346b3fb28d3e20f6160b66b6abd809c9ad4f99943e5682a8e82be118
+
+Total reclaimed space: 1.677GB
+[root@localhost volumes]# 
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
