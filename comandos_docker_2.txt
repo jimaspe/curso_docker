@@ -1,0 +1,1407 @@
+############# ************ IMAGENES ******************##################
+##### creacion de una imagen a partir de un contenedor #############
+
+docker run -it --name ubuntu1 ubuntu bash
+###instalammos el wget
+[root@localhost jdap]# docker run -it --name ubuntu1 ubuntu bash
+root@d7cff025d7b1:/# wget hhtp://www.google.com
+bash: wget: command not found
+root@d7cff025d7b1:/# apt-get update
+root@d7cff025d7b1:/# apt-get install wget
+root@d7cff025d7b1:/#
+
+####listamos todos los contenedores
+[root@localhost jdap]# docker ps -a
+CONTAINER ID   IMAGE     COMMAND   CREATED          STATUS                     PORTS     NAMES
+d7cff025d7b1   ubuntu    "bash"    13 minutes ago   Exited (0) 3 minutes ago             ubuntu1
+### creacion de una imagen con el comando docker commit, el cual crea un contenedor a partir de otro contenedor, esta imagen tiene el componente wget
+
+[root@localhost jdap]# docker commit ubuntu1 mi_ubuntu
+sha256:9b9912e069cb797bcde37e2c86c8f00a80a63b1a1b64379f742b48b2f67847c0
+[root@localhost jdap]# docker images
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+mi_ubuntu     latest    9b9912e069cb   2 minutes ago   107MB
+busybox       latest    a77dce18d0ec   9 days ago      1.24MB
+mysql         latest    a347a5928046   2 weeks ago     545MB
+bash          latest    a3cae8598d52   2 weeks ago     13.6MB
+python        latest    d1eef6fb8dbe   3 weeks ago     885MB
+nginx         latest    ae2feff98a0c   3 weeks ago     133MB
+wordpress     latest    bc5f6567b763   3 weeks ago     550MB
+mongo         latest    3068f6bb852e   4 weeks ago     493MB
+ubuntu        latest    f643c72bc252   6 weeks ago     72.9MB
+hello-world   latest    bf756fb1ae65   12 months ago   13.3kB
+[root@localhost jdap]#
+### si creamos otro contenedor a con la nueva imagen, entonces este ya cuenta con la aplicacion wget. Se creó un contenedor de una imagen + una capa de wget
+[root@localhost jdap]# docker run -it mi_ubuntu bash
+root@3823ac825d93:/# wget
+wget: missing URL
+Usage: wget [OPTION]... [URL]...
+
+Try `wget --help' for more options.
+root@3823ac825d93:/#
+
+####### creacion de una image a partir de un archivo Dockerfile ######################
+####### Comando RUN ##################################################################
+### es importante que el archivo tenga como nombre "Dockerfile"
+### el contenido del archivo es simple y para nada debe ser interactivo, de lo contrario la creacion de la imagen tendrá error
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+#######
+## ejecutar el comando docker build -t imagen_python .
+## imagen_python es el nombre de la imagen
+## el punto es el contexto donde se encuentra el archivo dockerfile, para mi caso la ejecucion del comando lo realicé en el mismo directorio donde se encuentra el archivo dockerfile
+
+[root@localhost /]# cd root
+[root@localhost ~]# cd imagen_python/
+[root@localhost imagen_python]# pwd
+/root/imagen_python
+[root@localhost imagen_python]# vi DockerFile
+[root@localhost imagen_python]# docker build -t imagen_python .
+Sending build context to Docker daemon  2.048kB
+Step 1/3 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/3 : RUN apt-get update
+ ---> Running in 35b0f22527cd
+Get:1 http://security.ubuntu.com/ubuntu focal-security InRelease [109 kB]
+Get:2 http://archive.ubuntu.com/ubuntu focal InRelease [265 kB]
+Get:3 http://security.ubuntu.com/ubuntu focal-security/restricted amd64 Packages [124 kB]
+Get:4 http://security.ubuntu.com/ubuntu focal-security/main amd64 Packages [543 kB]
+Get:5 http://security.ubuntu.com/ubuntu focal-security/multiverse amd64 Packages [741 B]
+Get:6 http://security.ubuntu.com/ubuntu focal-security/universe amd64 Packages [648 kB]
+Get:7 http://archive.ubuntu.com/ubuntu focal-updates InRelease [114 kB]
+Get:8 http://archive.ubuntu.com/ubuntu focal-backports InRelease [101 kB]
+Get:9 http://archive.ubuntu.com/ubuntu focal/multiverse amd64 Packages [177 kB]
+Get:10 http://archive.ubuntu.com/ubuntu focal/universe amd64 Packages [11.3 MB]
+Get:11 http://archive.ubuntu.com/ubuntu focal/restricted amd64 Packages [33.4 kB]
+Get:12 http://archive.ubuntu.com/ubuntu focal/main amd64 Packages [1275 kB]
+Get:13 http://archive.ubuntu.com/ubuntu focal-updates/multiverse amd64 Packages [22.0 kB]
+Get:14 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 Packages [905 kB]
+Get:15 http://archive.ubuntu.com/ubuntu focal-updates/restricted amd64 Packages [168 kB]
+Get:16 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 Packages [946 kB]
+Get:17 http://archive.ubuntu.com/ubuntu focal-backports/universe amd64 Packages [4250 B]
+Fetched 16.8 MB in 7s (2414 kB/s)
+Reading package lists...
+Removing intermediate container 35b0f22527cd
+ ---> 79dc3607abd4
+Step 3/3 : RUN apt-get install -y python
+ ---> Running in 41269bcc0952
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  file libexpat1 libmagic-mgc libmagic1 libpython2-stdlib libpython2.7-minimal
+  libpython2.7-stdlib libreadline8 libsqlite3-0 libssl1.1 mime-support python2
+  python2-minimal python2.7 python2.7-minimal readline-common xz-utils
+Suggested packages:
+  python2-doc python-tk python2.7-doc binutils binfmt-support readline-doc
+The following NEW packages will be installed:
+  file libexpat1 libmagic-mgc libmagic1 libpython2-stdlib libpython2.7-minimal
+  libpython2.7-stdlib libreadline8 libsqlite3-0 libssl1.1 mime-support
+  python-is-python2 python2 python2-minimal python2.7 python2.7-minimal
+  readline-common xz-utils
+0 upgraded, 18 newly installed, 0 to remove and 3 not upgraded.
+Need to get 6359 kB of archives.
+After this operation, 29.5 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libpython2.7-minimal amd64 2.7.18-1~20.0                                                        4 [335 kB]
+Get:2 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 python2.7-minimal amd64 2.7.18-1~20.04 [                                                        1270 kB]
+Get:3 http://archive.ubuntu.com/ubuntu focal/universe amd64 python2-minimal amd64 2.7.17-2ubuntu4 [27.5 kB]
+Get:4 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libssl1.1 amd64 1.1.1f-1ubuntu2.1 [1319 kB]
+Get:5 http://archive.ubuntu.com/ubuntu focal/main amd64 mime-support all 3.64ubuntu1 [30.6 kB]
+Get:6 http://archive.ubuntu.com/ubuntu focal/main amd64 libexpat1 amd64 2.2.9-1build1 [73.3 kB]
+Get:7 http://archive.ubuntu.com/ubuntu focal/main amd64 readline-common all 8.0-4 [53.5 kB]
+Get:8 http://archive.ubuntu.com/ubuntu focal/main amd64 libreadline8 amd64 8.0-4 [131 kB]
+Get:9 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libsqlite3-0 amd64 3.31.1-4ubuntu0.2 [549 kB                                                        ]
+Get:10 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 libpython2.7-stdlib amd64 2.7.18-1~20.0                                                        4 [1886 kB]
+Get:11 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 python2.7 amd64 2.7.18-1~20.04 [248 kB]
+Get:12 http://archive.ubuntu.com/ubuntu focal/universe amd64 libpython2-stdlib amd64 2.7.17-2ubuntu4 [7072 B                                                        ]
+Get:13 http://archive.ubuntu.com/ubuntu focal/universe amd64 python2 amd64 2.7.17-2ubuntu4 [26.5 kB]
+Get:14 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic-mgc amd64 1:5.38-4 [218 kB]
+Get:15 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic1 amd64 1:5.38-4 [75.9 kB]
+Get:16 http://archive.ubuntu.com/ubuntu focal/main amd64 file amd64 1:5.38-4 [23.3 kB]
+Get:17 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 xz-utils amd64 5.2.4-1ubuntu1 [82.5 kB]
+Get:18 http://archive.ubuntu.com/ubuntu focal/universe amd64 python-is-python2 all 2.7.17-4 [2496 B]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 6359 kB in 3s (2157 kB/s)
+Selecting previously unselected package libpython2.7-minimal:amd64.
+(Reading database ... 4121 files and directories currently installed.)
+Preparing to unpack .../00-libpython2.7-minimal_2.7.18-1~20.04_amd64.deb ...
+Unpacking libpython2.7-minimal:amd64 (2.7.18-1~20.04) ...
+Selecting previously unselected package python2.7-minimal.
+Preparing to unpack .../01-python2.7-minimal_2.7.18-1~20.04_amd64.deb ...
+Unpacking python2.7-minimal (2.7.18-1~20.04) ...
+Selecting previously unselected package python2-minimal.
+Preparing to unpack .../02-python2-minimal_2.7.17-2ubuntu4_amd64.deb ...
+Unpacking python2-minimal (2.7.17-2ubuntu4) ...
+Selecting previously unselected package libssl1.1:amd64.
+Preparing to unpack .../03-libssl1.1_1.1.1f-1ubuntu2.1_amd64.deb ...
+Unpacking libssl1.1:amd64 (1.1.1f-1ubuntu2.1) ...
+Selecting previously unselected package mime-support.
+Preparing to unpack .../04-mime-support_3.64ubuntu1_all.deb ...
+Unpacking mime-support (3.64ubuntu1) ...
+Selecting previously unselected package libexpat1:amd64.
+Preparing to unpack .../05-libexpat1_2.2.9-1build1_amd64.deb ...
+Unpacking libexpat1:amd64 (2.2.9-1build1) ...
+Selecting previously unselected package readline-common.
+Preparing to unpack .../06-readline-common_8.0-4_all.deb ...
+Unpacking readline-common (8.0-4) ...
+Selecting previously unselected package libreadline8:amd64.
+Preparing to unpack .../07-libreadline8_8.0-4_amd64.deb ...
+Unpacking libreadline8:amd64 (8.0-4) ...
+Selecting previously unselected package libsqlite3-0:amd64.
+Preparing to unpack .../08-libsqlite3-0_3.31.1-4ubuntu0.2_amd64.deb ...
+Unpacking libsqlite3-0:amd64 (3.31.1-4ubuntu0.2) ...
+Selecting previously unselected package libpython2.7-stdlib:amd64.
+Preparing to unpack .../09-libpython2.7-stdlib_2.7.18-1~20.04_amd64.deb ...
+Unpacking libpython2.7-stdlib:amd64 (2.7.18-1~20.04) ...
+Selecting previously unselected package python2.7.
+Preparing to unpack .../10-python2.7_2.7.18-1~20.04_amd64.deb ...
+Unpacking python2.7 (2.7.18-1~20.04) ...
+Selecting previously unselected package libpython2-stdlib:amd64.
+Preparing to unpack .../11-libpython2-stdlib_2.7.17-2ubuntu4_amd64.deb ...
+Unpacking libpython2-stdlib:amd64 (2.7.17-2ubuntu4) ...
+Setting up libpython2.7-minimal:amd64 (2.7.18-1~20.04) ...
+Setting up python2.7-minimal (2.7.18-1~20.04) ...
+Linking and byte-compiling packages for runtime python2.7...
+Setting up python2-minimal (2.7.17-2ubuntu4) ...
+Selecting previously unselected package python2.
+(Reading database ... 4943 files and directories currently installed.)
+Preparing to unpack .../0-python2_2.7.17-2ubuntu4_amd64.deb ...
+Unpacking python2 (2.7.17-2ubuntu4) ...
+Selecting previously unselected package libmagic-mgc.
+Preparing to unpack .../1-libmagic-mgc_1%3a5.38-4_amd64.deb ...
+Unpacking libmagic-mgc (1:5.38-4) ...
+Selecting previously unselected package libmagic1:amd64.
+Preparing to unpack .../2-libmagic1_1%3a5.38-4_amd64.deb ...
+Unpacking libmagic1:amd64 (1:5.38-4) ...
+Selecting previously unselected package file.
+Preparing to unpack .../3-file_1%3a5.38-4_amd64.deb ...
+Unpacking file (1:5.38-4) ...
+Selecting previously unselected package xz-utils.
+Preparing to unpack .../4-xz-utils_5.2.4-1ubuntu1_amd64.deb ...
+Unpacking xz-utils (5.2.4-1ubuntu1) ...
+Selecting previously unselected package python-is-python2.
+Preparing to unpack .../5-python-is-python2_2.7.17-4_all.deb ...
+Unpacking python-is-python2 (2.7.17-4) ...
+Setting up libexpat1:amd64 (2.2.9-1build1) ...
+Setting up mime-support (3.64ubuntu1) ...
+Setting up libmagic-mgc (1:5.38-4) ...
+Setting up libssl1.1:amd64 (1.1.1f-1ubuntu2.1) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC co                                                        ntains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.30.0 /usr/local/share/perl/5.30.0 /usr/lib/x86_64-l                                                        inux-gnu/perl5/5.30 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl/5.30 /usr/share/perl/5.30 /usr/local/lib                                                        /site_perl /usr/lib/x86_64-linux-gnu/perl-base) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+debconf: falling back to frontend: Teletype
+Setting up libsqlite3-0:amd64 (3.31.1-4ubuntu0.2) ...
+Setting up libmagic1:amd64 (1:5.38-4) ...
+Setting up file (1:5.38-4) ...
+Setting up xz-utils (5.2.4-1ubuntu1) ...
+update-alternatives: using /usr/bin/xz to provide /usr/bin/lzma (lzma) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzma.1.gz because associated file /usr/sh                                                        are/man/man1/xz.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/unlzma.1.gz because associated file /usr/                                                        share/man/man1/unxz.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzcat.1.gz because associated file /usr/s                                                        hare/man/man1/xzcat.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzmore.1.gz because associated file /usr/                                                        share/man/man1/xzmore.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzless.1.gz because associated file /usr/                                                        share/man/man1/xzless.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzdiff.1.gz because associated file /usr/                                                        share/man/man1/xzdiff.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzcmp.1.gz because associated file /usr/s                                                        hare/man/man1/xzcmp.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzgrep.1.gz because associated file /usr/                                                        share/man/man1/xzgrep.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzegrep.1.gz because associated file /usr                                                        /share/man/man1/xzegrep.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzfgrep.1.gz because associated file /usr                                                        /share/man/man1/xzfgrep.1.gz (of link group lzma) doesn't exist
+Setting up readline-common (8.0-4) ...
+Setting up libreadline8:amd64 (8.0-4) ...
+Setting up libpython2.7-stdlib:amd64 (2.7.18-1~20.04) ...
+Setting up python2.7 (2.7.18-1~20.04) ...
+Setting up libpython2-stdlib:amd64 (2.7.17-2ubuntu4) ...
+Setting up python2 (2.7.17-2ubuntu4) ...
+Setting up python-is-python2 (2.7.17-4) ...
+Processing triggers for libc-bin (2.31-0ubuntu9.1) ...
+Removing intermediate container 41269bcc0952
+ ---> b88e6bc47e80
+Successfully built b88e6bc47e80
+Successfully tagged imagen_python:latest
+[root@localhost imagen_python]#
+
+### una vez creada la imagen se procede a crear el contenedor, en el ejemplo1 se crea un contenedor que contiene un ubuntu y la instalacion de python
+## al momento de crear el contenedor se le está indicando que inicie la aplicacion python, es como el comando que termina en bash
+
+[root@localhost imagen_python]# docker run -it imagen_python python
+Python 2.7.18 (default, Aug  4 2020, 11:16:42)
+[GCC 9.3.0] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> print('hola')
+hola
+>>> exit
+Use exit() or Ctrl-D (i.e. EOF) to exit
+>>> exit
+Use exit() or Ctrl-D (i.e. EOF) to exit
+>>> exit()
+[root@localhost imagen_python]# docker run -it --name mi_python_de_imagen_python imagen_python python
+Python 2.7.18 (default, Aug  4 2020, 11:16:42)
+[GCC 9.3.0] on linux2
+Type "help", "copyright", "credits" or "license" for more information.
+>>> exit()
+[root@localhost imagen_python]#
+
+########### creamos otro archivo Dockerfile donde la base es ubuntu
+### la siguiente capa es para hacer un update
+### la siguiente capa es para instalar python sin interaccion 
+### la siguiente capa lo que hace es crear un ficher con la version 1.0 y procede a instalar el git y el utilitario para hacer ping
+### el caracter \ indica salto de linea en linux
+[root@localhost curso_openshift]# mkdir imagen_python
+[root@localhost curso_openshift]# vi Dockerfile
+[root@localhost curso_openshift]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+[root@localhost curso_openshift]#
+## se procede a crear la imagen a partir del archivo Dockerfile
+[root@localhost curso_openshift]# docker build -t imagen_python:v1 .
+mñ
+[root@localhost curso_openshift]# docker images
+REPOSITORY      TAG       IMAGE ID       CREATED              SIZE
+imagen_python   v1        122826ddaca8   About a minute ago   232MB
+imagen_python   latest    b88e6bc47e80   2 hours ago          136MB
+mi_ubuntu       latest    9b9912e069cb   5 hours ago          107MB
+busybox         latest    a77dce18d0ec   10 days ago          1.24MB
+mysql           latest    a347a5928046   2 weeks ago          545MB
+bash            latest    a3cae8598d52   2 weeks ago          13.6MB
+python          latest    d1eef6fb8dbe   3 weeks ago          885MB
+nginx           latest    ae2feff98a0c   3 weeks ago          133MB
+wordpress       latest    bc5f6567b763   4 weeks ago          550MB
+mongo           latest    3068f6bb852e   4 weeks ago          493MB
+ubuntu          latest    f643c72bc252   6 weeks ago          72.9MB
+hello-world     latest    bf756fb1ae65   12 months ago        13.3kB
+[root@localhost curso_openshift]#
+
+### creamos un contenedor con la imagen creada a partir de un Dockerfile, levantamos la aplicacion bash para interactuar con el contenedor. Ya podemos ejecutar los comando ping, git y podemos ver que se creó un archivo version con el contenido de 1.0
+run -it --rm --name mi_contenedor imagen_python:v1 bash
+root@64bc8993ba5f:/# cat /etc/version
+1.0
+root@64bc8993ba5f:/# ping
+ping: usage error: Destination address required
+root@64bc8993ba5f:/# git
+
+
+####### creacion de una image a partir de un archivo Dockerfile ######################
+####### Comando CMD ##################################################################
+## este comando indica el comando a ejecutar por defecto para el contenedor, puedes tener varios CMD pero el ultimo es el que vale.
+
+[root@localhost curso_openshift]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+CMD echo "Welcome to this container"
+
+### creamos la siguiente imagen a partir de este Dockerfile
+
+[root@localhost curso_openshift]# docker build -t image:v1 .
+Sending build context to Docker daemon   2.56kB
+Step 1/5 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/5 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/5 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/5 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/5 : CMD echo "Welcome to this container"
+ ---> Running in 91f30e2c585b
+Removing intermediate container 91f30e2c585b
+ ---> 3cd7019dbf5f
+Successfully built 3cd7019dbf5f
+Successfully tagged image:v1
+
+#### creamos un contenedor a partir de esta imagen y debido al comando CMD envia el mensaje y luego el contenedor se detiene y por el parametro --rm el contenedo se procede a eliminar.
+[root@localhost curso_openshift]# docker run -it --rm image:v1
+Welcome to this container
+[root@localhost curso_openshift]#
+
+########### otras variantes para usar el comando CMD, el formato json es el correcto CMD ["/bin/bash"], de esta forma solo se ejecuta una vez
+########### para ver el log de lo que ejecuta la imagen al momento que crea un contenedor se puede usar el comando "docker history {nombre imagen}:{tag}"
+[root@localhost curso_docker]# docker images
+REPOSITORY      TAG       IMAGE ID       CREATED         SIZE
+imagen_python   v1        122826ddaca8   34 hours ago    232MB
+imagen_python   latest    b88e6bc47e80   36 hours ago    136MB
+mi_ubuntu       latest    9b9912e069cb   38 hours ago    107MB
+busybox         latest    a77dce18d0ec   11 days ago     1.24MB
+mysql           latest    a347a5928046   2 weeks ago     545MB
+bash            latest    a3cae8598d52   2 weeks ago     13.6MB
+python          latest    d1eef6fb8dbe   3 weeks ago     885MB
+nginx           latest    ae2feff98a0c   3 weeks ago     133MB
+wordpress       latest    bc5f6567b763   4 weeks ago     550MB
+mongo           latest    3068f6bb852e   4 weeks ago     493MB
+ubuntu          latest    f643c72bc252   6 weeks ago     72.9MB
+hello-world     latest    bf756fb1ae65   12 months ago   13.3kB
+[root@localhost curso_docker]# clear
+[root@localhost curso_docker]# vi Dockerfile
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+CMD ["echo", "Welcome to this container"]
+[root@localhost curso_docker]# docker build -t imagen:v1 .
+Sending build context to Docker daemon  38.91kB
+Step 1/5 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/5 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/5 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/5 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install                                                                                                    -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/5 : CMD ["echo", "Welcome to this container"]
+ ---> Running in 1ae8c6589379
+Removing intermediate container 1ae8c6589379
+ ---> e04000432323
+Successfully built e04000432323
+Successfully tagged imagen:v1
+[root@localhost curso_docker]# docker run -it --rm imagen:v1
+Welcome to this container
+[root@localhost curso_docker]# docker history imagen:v1
+IMAGE          CREATED              CREATED BY                                      SIZE                                                                                                         COMMENT
+e04000432323   About a minute ago   /bin/sh -c #(nop)  CMD ["echo" "Welcome to t…   0B                                                                                                     
+122826ddaca8   34 hours ago         /bin/sh -c echo 1.0 >> /etc/version && apt-g…   96.6                                                                                                   MB
+b88e6bc47e80   36 hours ago         /bin/sh -c apt-get install -y python            36.3                                                                                                   MB
+79dc3607abd4   36 hours ago         /bin/sh -c apt-get update                       26.6                                                                                                   MB
+f643c72bc252   6 weeks ago          /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B                                                                                                     
+<missing>      6 weeks ago          /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B                                                                                                     
+<missing>      6 weeks ago          /bin/sh -c [ -z "$(apt-get indextargets)" ]     0B                                                                                                     
+<missing>      6 weeks ago          /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   811B                                                                                                   
+<missing>      6 weeks ago          /bin/sh -c #(nop) ADD file:4f15c4475fbafb3fe…   72.9                                                                                                   MB
+[root@localhost curso_docker]# docker rmi images:v1
+Error: No such image: images:v1
+[root@localhost curso_docker]# docker rmi imagen:v1
+Untagged: imagen:v1
+Deleted: sha256:e04000432323b706d4d09c242667ed72a314ab0975490a373ab5b60c4172d0e4
+[root@localhost curso_docker]# vi Dockerfile
+[root@localhost curso_docker]# docker build -t imagen:v1 .
+Sending build context to Docker daemon  38.91kB
+Step 1/5 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/5 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/5 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/5 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install                                                                                                    -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/5 : CMD /bin/bash
+ ---> Running in 5a11d9324586
+Removing intermediate container 5a11d9324586
+ ---> 5574edb95c60
+Successfully built 5574edb95c60
+Successfully tagged imagen:v1
+[root@localhost curso_docker]# docker run -it --rm imagen:v1
+root@ce7e64ae21da:/# exit
+exit
+[root@localhost curso_docker]# docker history imagen:v1
+IMAGE          CREATED              CREATED BY                                      SIZE                                                                                                         COMMENT
+5574edb95c60   About a minute ago   /bin/sh -c #(nop)  CMD ["/bin/sh" "-c" "/bin…   0B                                                                                                     
+122826ddaca8   34 hours ago         /bin/sh -c echo 1.0 >> /etc/version && apt-g…   96.6                                                                                                   MB
+b88e6bc47e80   36 hours ago         /bin/sh -c apt-get install -y python            36.3                                                                                                   MB
+79dc3607abd4   36 hours ago         /bin/sh -c apt-get update                       26.6                                                                                                   MB
+f643c72bc252   6 weeks ago          /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B                                                                                                     
+<missing>      6 weeks ago          /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B                                                                                                     
+<missing>      6 weeks ago          /bin/sh -c [ -z "$(apt-get indextargets)" ]     0B                                                                                                     
+<missing>      6 weeks ago          /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   811B                                                                                                   
+<missing>      6 weeks ago          /bin/sh -c #(nop) ADD file:4f15c4475fbafb3fe…   72.9                                                                                                   MB
+[root@localhost curso_docker]# docker rmi imagen:v1
+Untagged: imagen:v1
+Deleted: sha256:5574edb95c60b66c98a131ec0a75e95ae247ce13cdad99e5f67842e7179f987a
+[root@localhost curso_docker]# vi Dockerfile
+[root@localhost curso_docker]# docker build -t imagen:v1
+"docker build" requires exactly 1 argument.
+See 'docker build --help'.
+
+Usage:  docker build [OPTIONS] PATH | URL | -
+
+Build an image from a Dockerfile
+[root@localhost curso_docker]# docker build -t imagen:v1 .
+Sending build context to Docker daemon  38.91kB
+Step 1/5 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/5 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/5 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/5 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install                                                                                                    -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/5 : CMD ["/bin/bash"]
+ ---> Running in b04148139ebf
+Removing intermediate container b04148139ebf
+ ---> e9eee396fc74
+Successfully built e9eee396fc74
+Successfully tagged imagen:v1
+[root@localhost curso_docker]# docker run -it --rm imagen:v1
+root@88de514b7ab2:/# exit
+exit
+[root@localhost curso_docker]# docker history imagen:v1
+IMAGE          CREATED          CREATED BY                                      SIZE                                                                                                         COMMENT
+e9eee396fc74   45 seconds ago   /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B                                                                                                         
+122826ddaca8   34 hours ago     /bin/sh -c echo 1.0 >> /etc/version && apt-g…   96.6MB                                                                                                     
+b88e6bc47e80   36 hours ago     /bin/sh -c apt-get install -y python            36.3MB                                                                                                     
+79dc3607abd4   36 hours ago     /bin/sh -c apt-get update                       26.6MB                                                                                                     
+f643c72bc252   6 weeks ago      /bin/sh -c #(nop)  CMD ["/bin/bash"]            0B                                                                                                         
+<missing>      6 weeks ago      /bin/sh -c mkdir -p /run/systemd && echo 'do…   7B                                                                                                         
+<missing>      6 weeks ago      /bin/sh -c [ -z "$(apt-get indextargets)" ]     0B                                                                                                         
+<missing>      6 weeks ago      /bin/sh -c set -xe   && echo '#!/bin/sh' > /…   811B                                                                                                       
+<missing>      6 weeks ago      /bin/sh -c #(nop) ADD file:4f15c4475fbafb3fe…   72.9MB                                                                                                     
+[root@localhost curso_docker]#
+
+############################## COMANDO ENTRYPOINT ############################
+# tener en cuenta que al crear un contenedor el parametro al final es como ejecutar un CMD
+
+[root@localhost curso_docker]# docker build -t imagen:v2 .
+Sending build context to Docker daemon  38.91kB
+Step 1/5 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/5 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/5 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/5 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/5 : CMD ["/bin/bash"]
+ ---> Using cache
+ ---> e9eee396fc74
+Successfully built e9eee396fc74
+Successfully tagged imagen:v2
+[root@localhost curso_docker]# docker run -it --rm imagen:v2
+root@e71ba476b6a8:/# ls
+bin   dev  home  lib32  libx32  mnt  proc  run   srv  tmp  var
+boot  etc  lib   lib64  media   opt  root  sbin  sys  usr
+root@e71ba476b6a8:/# exit
+exit
+[root@localhost curso_docker]# docker run -it --rm imagen:v2 ls
+bin   dev  home  lib32  libx32  mnt  proc  run   srv  tmp  var
+boot  etc  lib   lib64  media   opt  root  sbin  sys  usr
+[root@localhost curso_docker]#
+
+################### otra variante del comando ENTRYPOINT ######################
+######## despues del comando ENTRYPOINT al momento de crear un contenedor puedes agregar argumentos y estos se concatena al entrypoint
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+ENTRYPOINT  ["df"]
+
+[root@localhost curso_docker]# docker build -t imagen:v2 .
+Sending build context to Docker daemon  38.91kB
+Step 1/5 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/5 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/5 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/5 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/5 : ENTRYPOINT  ["df"]
+ ---> Running in af0b96b8aef9
+Removing intermediate container af0b96b8aef9
+ ---> d236523b9e9e
+Successfully built d236523b9e9e
+Successfully tagged imagen:v2
+[root@localhost curso_docker]# docker run -it --rm imagen:v2
+Filesystem              1K-blocks    Used Available Use% Mounted on
+overlay                  15718400 9218220   6500180  59% /
+tmpfs                       65536       0     65536   0% /dev
+tmpfs                     1940200       0   1940200   0% /sys/fs/cgroup
+shm                         65536       0     65536   0% /dev/shm
+/dev/mapper/centos-root  15718400 9218220   6500180  59% /etc/hosts
+tmpfs                     1940200       0   1940200   0% /proc/asound
+tmpfs                     1940200       0   1940200   0% /proc/acpi
+tmpfs                     1940200       0   1940200   0% /proc/scsi
+tmpfs                     1940200       0   1940200   0% /sys/firmware
+[root@localhost curso_docker]# docker run -it --rm imagen:v2 -h
+Filesystem               Size  Used Avail Use% Mounted on
+overlay                   15G  8.8G  6.2G  59% /
+tmpfs                     64M     0   64M   0% /dev
+tmpfs                    1.9G     0  1.9G   0% /sys/fs/cgroup
+shm                       64M     0   64M   0% /dev/shm
+/dev/mapper/centos-root   15G  8.8G  6.2G  59% /etc/hosts
+tmpfs                    1.9G     0  1.9G   0% /proc/asound
+tmpfs                    1.9G     0  1.9G   0% /proc/acpi
+tmpfs                    1.9G     0  1.9G   0% /proc/scsi
+tmpfs                    1.9G     0  1.9G   0% /sys/firmware
+[root@localhost curso_docker]# docker run -it --rm imagen:v2 ls
+df: ls: No such file or directory
+[root@localhost curso_docker]#
+
+####################################
+#### Comando WORKDIR ###############
+####################################
+### crea un directorio de trabajo y sobre ella se realiza el siguiente comando, como en este caso se ve el comando touch
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+RUN mkdir /datos
+WORKDIR /datos
+RUN touch f1.txt
+RUN mkdir /datos1
+WORKDIR /datos1
+RUN touch f2.txt
+ENTRYPOINT  ["/bin/bash"]
+[root@localhost curso_docker]#
+[root@localhost curso_docker]# docker build -t imagen:v3 .
+Sending build context to Docker daemon  38.91kB
+Step 1/11 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/11 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/11 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/11 : RUN echo 1.0 >> /etc/version && apt-get install                                                                                                         -y git     && apt-get install -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/11 : RUN mkdir /datos
+ ---> Running in 32523c1683f1
+Removing intermediate container 32523c1683f1
+ ---> 1d999f4be267
+Step 6/11 : WORKDIR /datos
+ ---> Running in 7a3ccfbe6219
+Removing intermediate container 7a3ccfbe6219
+ ---> 76c700d15a97
+Step 7/11 : RUN touch f1.txt
+ ---> Running in 511779d65ae9
+Removing intermediate container 511779d65ae9
+ ---> 1059fc03c288
+Step 8/11 : RUN mkdir /datos1
+ ---> Running in 4d3ed9897aac
+Removing intermediate container 4d3ed9897aac
+ ---> 209c76e8fb44
+Step 9/11 : WORKDIR /datos1
+ ---> Running in 9fda0e297024
+Removing intermediate container 9fda0e297024
+ ---> 4551a69ed8ba
+Step 10/11 : RUN touch f2.txt
+ ---> Running in c8c122be2610
+Removing intermediate container c8c122be2610
+ ---> c26e7b81355d
+Step 11/11 : ENTRYPOINT  ["/bin/bash"]
+ ---> Running in cfd890ad96b8
+Removing intermediate container cfd890ad96b8
+ ---> b74e68a638a5
+Successfully built b74e68a638a5
+Successfully tagged imagen:v3
+[root@localhost curso_docker]# docker run -it --rm imagen:v3
+root@a0b7398b85f0:/datos1# ls
+f2.txt
+root@a0b7398b85f0:/datos1# cd
+root@a0b7398b85f0:~#
+root@a0b7398b85f0:~# ls
+root@a0b7398b85f0:~# cd /datos
+root@a0b7398b85f0:/datos# cd ..
+root@a0b7398b85f0:/# ls -l
+total 0
+lrwxrwxrwx.   1 root root   7 Nov  6 01:21 bin -> usr/bin
+drwxr-xr-x.   2 root root   6 Apr 15  2020 boot
+drwxr-xr-x.   1 root root  20 Jan 11 04:23 datos
+drwxr-xr-x.   1 root root  20 Jan 11 04:23 datos1
+drwxr-xr-x.   5 root root 360 Jan 11 04:25 dev
+drwxr-xr-x.   1 root root  66 Jan 11 04:25 etc
+drwxr-xr-x.   2 root root   6 Apr 15  2020 home
+lrwxrwxrwx.   1 root root   7 Nov  6 01:21 lib -> usr/lib
+lrwxrwxrwx.   1 root root   9 Nov  6 01:21 lib32 -> usr/lib32
+lrwxrwxrwx.   1 root root   9 Nov  6 01:21 lib64 -> usr/lib64
+lrwxrwxrwx.   1 root root  10 Nov  6 01:21 libx32 -> usr/libx32
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 media
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 mnt
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 opt
+dr-xr-xr-x. 227 root root   0 Jan 11 04:25 proc
+drwx------.   2 root root  37 Nov  6 01:25 root
+drwxr-xr-x.   1 root root  21 Nov 25 22:25 run
+lrwxrwxrwx.   1 root root   8 Nov  6 01:21 sbin -> usr/sbin
+drwxr-xr-x.   2 root root   6 Nov  6 01:21 srv
+dr-xr-xr-x.  13 root root   0 Jan 10 01:55 sys
+drwxrwxrwt.   1 root root   6 Jan  9 05:08 tmp
+drwxr-xr-x.   1 root root  66 Nov  6 01:21 usr
+drwxr-xr-x.   1 root root  41 Nov  6 01:25 var
+root@a0b7398b85f0:/# exit
+exit
+
+####################################
+#### Comando COPY ###############
+####################################
+
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+#####WORKDIR######
+RUN mkdir /datos
+WORKDIR /datos
+RUN touch f1.txt
+RUN mkdir /datos1
+WORKDIR /datos1
+RUN touch f2.txt
+
+##### COPY #######
+COPY index.html .
+COPY app.log /datos
+
+ENTRYPOINT  ["/bin/bash"]
+[root@localhost curso_docker]# ls -l
+total 40
+-rw-r--r--. 1 root root     0 ene 11 01:37 app.log
+-rw-r--r--. 1 jdap jdap 35649 ene  8 02:00 Comandos Docker
+-rw-r--r--. 1 jdap jdap   361 ene 11 01:36 Dockerfile
+drwxr-xr-x. 2 jdap jdap     6 ene  8 23:53 imagen_python
+-rw-r--r--. 1 root root     0 ene 11 01:37 index.html
+[root@localhost curso_docker]#
+[root@localhost curso_docker]# docker build -t imagen:v4 .
+Sending build context to Docker daemon  39.94kB
+Step 1/13 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/13 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/13 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/13 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/13 : RUN mkdir /datos
+ ---> Using cache
+ ---> 1d999f4be267
+Step 6/13 : WORKDIR /datos
+ ---> Using cache
+ ---> 76c700d15a97
+Step 7/13 : RUN touch f1.txt
+ ---> Using cache
+ ---> 1059fc03c288
+Step 8/13 : RUN mkdir /datos1
+ ---> Using cache
+ ---> 209c76e8fb44
+Step 9/13 : WORKDIR /datos1
+ ---> Using cache
+ ---> 4551a69ed8ba
+Step 10/13 : RUN touch f2.txt
+ ---> Using cache
+ ---> c26e7b81355d
+Step 11/13 : COPY index.html .
+ ---> Using cache
+ ---> b6319892ae5c
+Step 12/13 : COPY app.log /datos
+ ---> Using cache
+ ---> 3c065360238d
+Step 13/13 : ENTRYPOINT  ["/bin/bash"]
+ ---> Using cache
+ ---> 1c55627c4ede
+Successfully built 1c55627c4ede
+Successfully tagged imagen:v4
+[root@localhost curso_docker]#
+[root@localhost curso_docker]# docker run -it --rm imagen:v4
+root@2ec64b92f391:/datos1# ls
+f2.txt  index.html
+root@2ec64b92f391:/datos1# cd /datos
+root@2ec64b92f391:/datos# ls
+app.log  f1.txt
+root@2ec64b92f391:/datos#
+
+
+
+####################################
+#### Comando CADD ###############
+####################################
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+#####WORKDIR######
+RUN mkdir /datos
+WORKDIR /datos
+RUN touch f1.txt
+RUN mkdir /datos1
+WORKDIR /datos1
+RUN touch f2.txt
+
+##### COPY #######
+COPY index.html .
+COPY app.log /datos
+
+##### ADD #######
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+#####WORKDIR######
+RUN mkdir /datos
+WORKDIR /datos
+RUN touch f1.txt
+RUN mkdir /datos1
+WORKDIR /datos1
+RUN touch f2.txt
+
+##### COPY #######
+### comando para hacer copias
+COPY index.html .
+COPY app.log /datos
+
+##### ADD #######
+#### comando para agregar recursos
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+#####WORKDIR######
+RUN mkdir /datos
+WORKDIR /datos
+RUN touch f1.txt
+RUN mkdir /datos1
+WORKDIR /datos1
+RUN touch f2.txt
+
+##### COPY #######
+#### realiza una copia de los archivos que le indiquen
+COPY index.html .
+COPY app.log /datos
+
+##### ADD #######
+#### agrega los archivos y directorios que se indique
+#### en el ejemplo se puede ver que agrega el directorio docs de la maquina local al contenedor, tambien mueve todos los archivos f* al directorio /datos/ del contenedor, y agrega el empaquetado g.tar al ultimo WORKDIR = Datos1 y los desempaqueta.
+
+ADD docs docs
+ADD f* /datos/
+ADD g.tar .
+
+
+ENTRYPOINT  ["/bin/bash"]
+[root@localhost curso_docker]# ls -l
+total 44
+-rw-r--r--. 1 root root     0 ene 11 01:37 app.log
+-rw-r--r--. 1 jdap jdap 35649 ene  8 02:00 Comandos Docker
+-rw-r--r--. 1 jdap jdap   422 ene 11 02:54 Dockerfile
+drwxr-xr-x. 2 jdap jdap    16 ene 11 02:32 docs
+-rw-r--r--. 1 root root     0 ene 11 01:53 f1
+-rw-r--r--. 1 root root     0 ene 11 01:53 f2
+-rw-r--r--. 1 root root     0 ene 11 01:53 f3
+-rw-r--r--. 1 root root     0 ene 11 01:53 f4
+-rw-r--r--. 1 jdap jdap  2048 ene 11 02:52 g.tar
+drwxr-xr-x. 2 jdap jdap     6 ene  8 23:53 imagen_python
+-rw-r--r--. 1 root root     0 ene 11 01:37 index.html
+[root@localhost curso_docker]#
+[root@localhost curso_docker]# docker build -t imagen:v5 .
+Sending build context to Docker daemon  58.37kB
+Step 1/16 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/16 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/16 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/16 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/16 : RUN mkdir /datos
+ ---> Using cache
+ ---> 1d999f4be267
+Step 6/16 : WORKDIR /datos
+ ---> Using cache
+ ---> 76c700d15a97
+Step 7/16 : RUN touch f1.txt
+ ---> Using cache
+ ---> 1059fc03c288
+Step 8/16 : RUN mkdir /datos1
+ ---> Using cache
+ ---> 209c76e8fb44
+Step 9/16 : WORKDIR /datos1
+ ---> Using cache
+ ---> 4551a69ed8ba
+Step 10/16 : RUN touch f2.txt
+ ---> Using cache
+ ---> c26e7b81355d
+Step 11/16 : COPY index.html .
+ ---> Using cache
+ ---> b6319892ae5c
+Step 12/16 : COPY app.log /datos
+ ---> Using cache
+ ---> 3c065360238d
+Step 13/16 : ADD docs docs
+ ---> Using cache
+ ---> 4c4b3da490af
+Step 14/16 : ADD f* /datos/
+ ---> Using cache
+ ---> 1f64ece325d9
+Step 15/16 : ADD g.tar .
+ ---> 56132d40a93a
+Step 16/16 : ENTRYPOINT  ["/bin/bash"]
+ ---> Running in 15b38fd9ace4
+Removing intermediate container 15b38fd9ace4
+ ---> 9ebb4a6c02cc
+Successfully built 9ebb4a6c02cc
+Successfully tagged imagen:v5
+[root@localhost curso_docker]#
+[root@localhost curso_docker]# docker run -it --rm imagen:v5
+root@258b8ce3fe15:/datos1# ls
+docs  f2.txt  g1  g2  index.html
+root@258b8ce3fe15:/datos1# cd docs/
+root@258b8ce3fe15:/datos1/docs# ls
+f5
+root@258b8ce3fe15:/datos1/docs# cd /datos
+root@258b8ce3fe15:/datos# ls
+app.log  f1  f1.txt  f2  f3  f4
+root@258b8ce3fe15:/datos#
+
+
+################# Comando ENV ################
+## para declarar variables
+
+[root@localhost curso_docker]# docker run -it --rm --env x=10 imagen:v4
+root@54aa362db75e:/datos1# env
+HOSTNAME=54aa362db75e
+PWD=/datos1
+x=10
+HOME=/root
+LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+LESSCLOSE=/usr/bin/lesspipe %s %s
+TERM=xterm
+LESSOPEN=| /usr/bin/lesspipe %s
+SHLVL=1
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+_=/usr/bin/env
+root@54aa362db75e:/datos1# echo $x
+10
+root@54aa362db75e:/datos1#
+
+##### otro ejemplo con el manejo de ENV
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+#####WORKDIR######
+RUN mkdir /datos
+WORKDIR /datos
+RUN touch f1.txt
+RUN mkdir /datos1
+WORKDIR /datos1
+RUN touch f2.txt
+
+##### COPY #######
+COPY index.html .
+COPY app.log /datos
+
+##### ADD #######
+ADD docs docs
+ADD f* /datos/
+ADD g.tar .
+
+##### ENV #######
+ENV dir=/data dir1=/data1
+RUN mkdir $dir  && mkdir $dir1
+
+ENTRYPOINT  ["/bin/bash"]
+[root@localhost curso_docker]# docker build -t imagen:v5 .
+Sending build context to Docker daemon  58.37kB
+Step 1/18 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/18 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/18 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/18 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/18 : RUN mkdir /datos
+ ---> Using cache
+ ---> 1d999f4be267
+Step 6/18 : WORKDIR /datos
+ ---> Using cache
+ ---> 76c700d15a97
+Step 7/18 : RUN touch f1.txt
+ ---> Using cache
+ ---> 1059fc03c288
+Step 8/18 : RUN mkdir /datos1
+ ---> Using cache
+ ---> 209c76e8fb44
+Step 9/18 : WORKDIR /datos1
+ ---> Using cache
+ ---> 4551a69ed8ba
+Step 10/18 : RUN touch f2.txt
+ ---> Using cache
+ ---> c26e7b81355d
+Step 11/18 : COPY index.html .
+ ---> Using cache
+ ---> b6319892ae5c
+Step 12/18 : COPY app.log /datos
+ ---> Using cache
+ ---> 3c065360238d
+Step 13/18 : ADD docs docs
+ ---> Using cache
+ ---> 4c4b3da490af
+Step 14/18 : ADD f* /datos/
+ ---> Using cache
+ ---> 1f64ece325d9
+Step 15/18 : ADD g.tar .
+ ---> Using cache
+ ---> 56132d40a93a
+Step 16/18 : ENV dir=/data dir1=/data1
+ ---> Running in 2b775ecdfe66
+Removing intermediate container 2b775ecdfe66
+ ---> cf9e60873bf4
+Step 17/18 : RUN mkdir $dir  && mkdir $dir1
+ ---> Running in e77746c11060
+Removing intermediate container e77746c11060
+ ---> 276268e166dc
+Step 18/18 : ENTRYPOINT  ["/bin/bash"]
+ ---> Running in bbacc3b0ec06
+Removing intermediate container bbacc3b0ec06
+ ---> 0f7c717fe773
+Successfully built 0f7c717fe773
+Successfully tagged imagen:v5
+[root@localhost curso_docker]#
+[root@localhost curso_docker]# docker run -it --rm imagen:v5
+root@0fa391713de8:/datos1# cd /
+root@0fa391713de8:/# ls
+bin   data   datos   dev  home  lib32  libx32  mnt  proc  run   srv  tmp  var
+boot  data1  datos1  etc  lib   lib64  media   opt  root  sbin  sys  usr
+root@0fa391713de8:/# env
+HOSTNAME=0fa391713de8
+PWD=/
+HOME=/root
+LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:
+dir1=/data1
+LESSCLOSE=/usr/bin/lesspipe %s %s
+TERM=xterm
+LESSOPEN=| /usr/bin/lesspipe %s
+dir=/data
+SHLVL=1
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+OLDPWD=/datos1
+_=/usr/bin/env
+root@0fa391713de8:/#
+
+############# comando ARG #################3
+
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+#####WORKDIR######
+RUN mkdir /datos
+WORKDIR /datos
+RUN touch f1.txt
+RUN mkdir /datos1
+WORKDIR /datos1
+RUN touch f2.txt
+
+##### COPY #######
+COPY index.html .
+COPY app.log /datos
+
+##### ADD #######
+ADD docs docs
+ADD f* /datos/
+ADD g.tar .
+
+##### ENV #######
+ENV dir=/data dir1=/data1
+RUN mkdir $dir  && mkdir $dir1
+
+ARG dir2
+RUN mkdir $dir2
+
+ENTRYPOINT  ["/bin/bash"]
+[root@localhost curso_docker]# docker build -t imagen:v6 --build-arg dir2=/data2 .
+[root@localhost curso_docker]# docker build -t imagen:v6 --build-arg dir2=/data2 .
+Sending build context to Docker daemon  58.88kB
+Step 1/20 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/20 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/20 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/20 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/20 : RUN mkdir /datos
+ ---> Using cache
+ ---> 1d999f4be267
+Step 6/20 : WORKDIR /datos
+ ---> Using cache
+ ---> 76c700d15a97
+Step 7/20 : RUN touch f1.txt
+ ---> Using cache
+ ---> 1059fc03c288
+Step 8/20 : RUN mkdir /datos1
+ ---> Using cache
+ ---> 209c76e8fb44
+Step 9/20 : WORKDIR /datos1
+ ---> Using cache
+ ---> 4551a69ed8ba
+Step 10/20 : RUN touch f2.txt
+ ---> Using cache
+ ---> c26e7b81355d
+Step 11/20 : COPY index.html .
+ ---> Using cache
+ ---> b6319892ae5c
+Step 12/20 : COPY app.log /datos
+ ---> Using cache
+ ---> 3c065360238d
+Step 13/20 : ADD docs docs
+ ---> Using cache
+ ---> 4c4b3da490af
+Step 14/20 : ADD f* /datos/
+ ---> Using cache
+ ---> 1f64ece325d9
+Step 15/20 : ADD g.tar .
+ ---> Using cache
+ ---> 56132d40a93a
+Step 16/20 : ENV dir=/data dir1=/data1
+ ---> Using cache
+ ---> cf9e60873bf4
+Step 17/20 : RUN mkdir $dir  && mkdir $dir1
+ ---> Using cache
+ ---> 276268e166dc
+Step 18/20 : ARG dir2
+ ---> Using cache
+ ---> f22b644393cc
+Step 19/20 : RUN mkdir $dir2
+ ---> Running in 77d893db2375
+Removing intermediate container 77d893db2375
+ ---> a015ac249930
+Step 20/20 : ENTRYPOINT  ["/bin/bash"]
+ ---> Running in 8d665498f7c0
+Removing intermediate container 8d665498f7c0
+ ---> 0e557720cae9
+Successfully built 0e557720cae9
+Successfully tagged imagen:v6
+[root@localhost curso_docker]# docker run -it --rm imagen:v6
+root@db655ba47dc7:/datos1# ls
+docs  f2.txt  g1  g2  index.html
+root@db655ba47dc7:/datos1# cd /
+root@db655ba47dc7:/# ls
+bin   data1  datos1  home   lib64   mnt   root  srv  usr
+boot  data2  dev     lib    libx32  opt   run   sys  var
+data  datos  etc     lib32  media   proc  sbin  tmp
+root@db655ba47dc7:/#
+
+######### Otro ejemplo de ARG ################
+[root@localhost curso_docker]# cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y python
+RUN echo 1.0 >> /etc/version && apt-get install -y git \
+    && apt-get install -y iputils-ping
+#####WORKDIR######
+RUN mkdir /datos
+WORKDIR /datos
+RUN touch f1.txt
+RUN mkdir /datos1
+WORKDIR /datos1
+RUN touch f2.txt
+
+##### COPY #######
+COPY index.html .
+COPY app.log /datos
+
+##### ADD #######
+ADD docs docs
+ADD f* /datos/
+ADD g.tar .
+
+##### ENV #######
+ENV dir=/data dir1=/data1
+RUN mkdir $dir  && mkdir $dir1
+
+#### ARG #######
+ARG dir2
+RUN mkdir $dir2
+
+ARG user
+ENV user_docker $user
+ADD add_user.sh /datos1
+RUN /datos1/add_user.sh
+
+
+
+ENTRYPOINT  ["/bin/bash"]
+[root@localhost curso_docker]#
+[root@localhost curso_docker]# docker build -t imagen:v6 --build-arg dir2=/dir2 --build-arg user=jim .
+Sending build context to Docker daemon   59.9kB
+Step 1/24 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/24 : RUN apt-get update
+ ---> Using cache
+ ---> 79dc3607abd4
+Step 3/24 : RUN apt-get install -y python
+ ---> Using cache
+ ---> b88e6bc47e80
+Step 4/24 : RUN echo 1.0 >> /etc/version && apt-get install -y git     && apt-get install -y iputils-ping
+ ---> Using cache
+ ---> 122826ddaca8
+Step 5/24 : RUN mkdir /datos
+ ---> Using cache
+ ---> 1d999f4be267
+Step 6/24 : WORKDIR /datos
+ ---> Using cache
+ ---> 76c700d15a97
+Step 7/24 : RUN touch f1.txt
+ ---> Using cache
+ ---> 1059fc03c288
+Step 8/24 : RUN mkdir /datos1
+ ---> Using cache
+ ---> 209c76e8fb44
+Step 9/24 : WORKDIR /datos1
+ ---> Using cache
+ ---> 4551a69ed8ba
+Step 10/24 : RUN touch f2.txt
+ ---> Using cache
+ ---> c26e7b81355d
+Step 11/24 : COPY index.html .
+ ---> Using cache
+ ---> b6319892ae5c
+Step 12/24 : COPY app.log /datos
+ ---> Using cache
+ ---> 3c065360238d
+Step 13/24 : ADD docs docs
+ ---> Using cache
+ ---> 4c4b3da490af
+Step 14/24 : ADD f* /datos/
+ ---> Using cache
+ ---> 1f64ece325d9
+Step 15/24 : ADD g.tar .
+ ---> Using cache
+ ---> 56132d40a93a
+Step 16/24 : ENV dir=/data dir1=/data1
+ ---> Using cache
+ ---> cf9e60873bf4
+Step 17/24 : RUN mkdir $dir  && mkdir $dir1
+ ---> Using cache
+ ---> 276268e166dc
+Step 18/24 : ARG dir2
+ ---> Using cache
+ ---> f22b644393cc
+Step 19/24 : RUN mkdir $dir2
+ ---> Running in 5314857f56bd
+Removing intermediate container 5314857f56bd
+ ---> b39e33e4f575
+Step 20/24 : ARG user
+ ---> Running in 3cf0ffba1116
+Removing intermediate container 3cf0ffba1116
+ ---> c118d2f7fb3a
+Step 21/24 : ENV user_docker $user
+ ---> Running in ce46bbe63cbe
+Removing intermediate container ce46bbe63cbe
+ ---> f527dc520948
+Step 22/24 : ADD add_user.sh /datos1
+ ---> 1ab55c7cb2b1
+Step 23/24 : RUN /datos1/add_user.sh
+ ---> Running in a6c1860e9ae7
+Adding user `jim' ...
+Adding new group `jim' (1000) ...
+Adding new user `jim' (1000) with group `jim' ...
+Creating home directory `/home/jim' ...
+Copying files from `/etc/skel' ...
+New password: Password change aborted.
+passwd: Authentication token manipulation error
+passwd: password unchanged
+Use of uninitialized value $answer in chop at /usr/sbin/adduser line 591.
+Use of uninitialized value $answer in pattern match (m//) at /usr/sbin/adduser line 592.
+Try again? [y/N] Changing the user information for jim
+Enter the new value, or press ENTER for the default
+        Full Name []:   Room Number []:         Work Phone []:  Home Phone []:  Other []: Use of uninitialized value $answer in chop at /usr/sbin/adduser line 621.
+Use of uninitialized value $answer in pattern match (m//) at /usr/sbin/adduser line 622.
+Is the information correct? [Y/n] Removing intermediate container a6c1860e9ae7
+ ---> 2301a06f0d52
+Step 24/24 : ENTRYPOINT  ["/bin/bash"]
+ ---> Running in 8a62cc92699e
+Removing intermediate container 8a62cc92699e
+ ---> 0c75157c310d
+Successfully built 0c75157c310d
+Successfully tagged imagen:v6
+[root@localhost curso_docker]#
+[root@localhost curso_docker]# docker run -it --rm imagen:v6
+root@00344ffa3af1:/datos1# cat /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+_apt:x:100:65534::/nonexistent:/usr/sbin/nologin
+jim:x:1000:1000:,,,:/home/jim:/bin/bash
+root@00344ffa3af1:/datos1# cd /home
+root@00344ffa3af1:/home# ls
+jim
+root@00344ffa3af1:/home#
+
+############# comando EXPOSE #################
+### permite exponer puertos
+############ comando Volume ##################
+
+############Practica Dockerfile con nginx #######
+########### Inicio Dockerfile #########
+##Descargamos una versión concreta de UBUNTU, a través del tag
+FROM ubuntu:12.04
+MAINTAINER JDAP Formacion "jimaspe@gmail.com"
+
+##Actualizamos el sistema
+RUN apt-get update
+
+##Instalamos nginx
+RUN apt-get install -y nginx
+
+##Creamos un fichero index.html en el directorio por defecto de nginx
+RUN echo 'Mi primer Dockerfile' > /usr/share/nginx/www/index.html
+
+##Arrancamos NGINX a través de ENTRYPOINT para que no pueda ser
+##modificar en la creación del contenedor
+ENTRYPOINT ["/usr/sbin/nginx", "-g", "daemon off;"]
+
+##Exponemos el Puerto 80
+EXPOSE 80
+########### Fin Dockerfile #########
+
+docker build -t training/nginx:v1 .
+docker build -t training/nginx:v3 --build-arg webpage=web1 .
+docker run -d -p 80:80 --name nginx1 --rm training/nginx:v1
+docker run -d -p 80:81 --name nginx2 --rm training/nginx:v3
+
+#########Fin de practica ############3
+
+##### Push de imagenes al dockerhub########
+[root@localhost curso_docker]# docker login
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username: jimaspe
+Password:
+WARNING! Your password will be stored unencrypted in /root/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+[root@localhost curso_docker]# docker images
+REPOSITORY       TAG       IMAGE ID       CREATED             SIZE
+training/nginx   v3        52a7555fdb4e   14 minutes ago      154MB
+<none>           <none>    785e7de539ac   17 minutes ago      154MB
+<none>           <none>    9717178b2380   18 minutes ago      154MB
+training/nginx   v2        fd41026c814e   30 minutes ago      146MB
+training/nginx   v1        0fa17878a2d4   36 minutes ago      146MB
+<none>           <none>    c3e6e280f57a   About an hour ago   146MB
+imagen           v6        0c75157c310d   16 hours ago        233MB
+<none>           <none>    0e557720cae9   17 hours ago        232MB
+imagen           v5        0f7c717fe773   3 days ago          232MB
+<none>           <none>    9ebb4a6c02cc   3 days ago          232MB
+imagen           v4        1c55627c4ede   3 days ago          232MB
+imagen           v3        b74e68a638a5   3 days ago          232MB
+imagen           v2        d236523b9e9e   4 days ago          232MB
+imagen           v1        e9eee396fc74   4 days ago          232MB
+imagen_python    v1        122826ddaca8   5 days ago          232MB
+imagen_python    latest    b88e6bc47e80   5 days ago          136MB
+mi_ubuntu        latest    9b9912e069cb   5 days ago          107MB
+busybox          latest    a77dce18d0ec   2 weeks ago         1.24MB
+mysql            latest    a347a5928046   3 weeks ago         545MB
+bash             latest    a3cae8598d52   3 weeks ago         13.6MB
+python           latest    d1eef6fb8dbe   3 weeks ago         885MB
+nginx            latest    ae2feff98a0c   4 weeks ago         133MB
+wordpress        latest    bc5f6567b763   4 weeks ago         550MB
+mongo            latest    3068f6bb852e   4 weeks ago         493MB
+ubuntu           latest    f643c72bc252   7 weeks ago         72.9MB
+hello-world      latest    bf756fb1ae65   12 months ago       13.3kB
+ubuntu           12.04     5b117edd0b76   3 years ago         104MB
+[root@localhost curso_docker]# docker image tag imagen:v6 jimaspe/imagen:v6
+[root@localhost curso_docker]# docker images
+REPOSITORY       TAG       IMAGE ID       CREATED             SIZE
+training/nginx   v3        52a7555fdb4e   14 minutes ago      154MB
+<none>           <none>    785e7de539ac   17 minutes ago      154MB
+<none>           <none>    9717178b2380   18 minutes ago      154MB
+training/nginx   v2        fd41026c814e   30 minutes ago      146MB
+training/nginx   v1        0fa17878a2d4   36 minutes ago      146MB
+<none>           <none>    c3e6e280f57a   About an hour ago   146MB
+imagen           v6        0c75157c310d   16 hours ago        233MB
+jimaspe/imagen   v6        0c75157c310d   16 hours ago        233MB
+<none>           <none>    0e557720cae9   17 hours ago        232MB
+imagen           v5        0f7c717fe773   3 days ago          232MB
+<none>           <none>    9ebb4a6c02cc   3 days ago          232MB
+imagen           v4        1c55627c4ede   3 days ago          232MB
+imagen           v3        b74e68a638a5   3 days ago          232MB
+imagen           v2        d236523b9e9e   4 days ago          232MB
+imagen           v1        e9eee396fc74   4 days ago          232MB
+imagen_python    v1        122826ddaca8   5 days ago          232MB
+imagen_python    latest    b88e6bc47e80   5 days ago          136MB
+mi_ubuntu        latest    9b9912e069cb   5 days ago          107MB
+busybox          latest    a77dce18d0ec   2 weeks ago         1.24MB
+mysql            latest    a347a5928046   3 weeks ago         545MB
+bash             latest    a3cae8598d52   3 weeks ago         13.6MB
+python           latest    d1eef6fb8dbe   3 weeks ago         885MB
+nginx            latest    ae2feff98a0c   4 weeks ago         133MB
+wordpress        latest    bc5f6567b763   4 weeks ago         550MB
+mongo            latest    3068f6bb852e   4 weeks ago         493MB
+ubuntu           latest    f643c72bc252   7 weeks ago         72.9MB
+hello-world      latest    bf756fb1ae65   12 months ago       13.3kB
+ubuntu           12.04     5b117edd0b76   3 years ago         104MB
+[root@localhost curso_docker]# docker push jimaspe/imagen:v6
+
+
+
+
+
+
+
+
+
+
+
+
+
+
